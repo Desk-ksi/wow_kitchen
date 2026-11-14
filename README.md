@@ -263,4 +263,4 @@
 https://www.figma.com/design/wtiJulKryRXCGrkclM2PCo/Wow---kitchen?node-id=0-1&t=ZIlIlcwRQnAXWuYL-1
 
 ## 12. ER図
-https://gyazo.com/c41648482ae992aac149eacd834e1968
+https://gyazo.com/cb14e6662c77e73452d5cc076c80cb8d
