@@ -259,5 +259,8 @@
 
 - Reactは、MVPの実装を終えたあと、組み込むかどうかを検討する。
 
-### 11. 画面遷移図
+## 11. 画面遷移図
 https://www.figma.com/design/wtiJulKryRXCGrkclM2PCo/Wow---kitchen?node-id=0-1&t=ZIlIlcwRQnAXWuYL-1
+
+## 12. ER図
+https://gyazo.com/98f5edefb35a4f89f0f396d88441a0eb
