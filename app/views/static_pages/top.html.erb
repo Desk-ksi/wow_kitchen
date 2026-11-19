@@ -1,0 +1,101 @@
+<main>
+  <section class="top-hero">
+    <div class="container">
+      <div class="row align-items-center g-4 g-lg-5">
+        <!-- 左:キャッチコピーと気分入力 -->
+        <div class="col-lg-6 order-2 order-lg-1">
+          <div class="wk-tag">
+            <i class="bi bi-geo-alt-fill"></i>GLOBAL HOME COOKING
+          </div>
+          <h1 class="top-hero-title">
+            今日の食卓は<br><span class="wk-marker">海外の気分！</span>
+          </h1>
+          <p class="top-hero-lead">食べたいものの雰囲気を伝えて海外の料理を楽しもう！</p>
+          <p class="top-hero-catch">
+            <i class="bi bi-megaphone-fill text-warning"></i>Wow！な料理で日常にWow！を
+          </p>
+          <div class="top-search-box">
+            <%= form_with url: "#", data: { turbo: false } do |form| %>
+              <div class="top-search-label">
+                <%= form.label :mood do %>
+                  <i class="bi bi-pencil-square text-danger me-1"></i>今日は何が食べたい？
+                <% end %>
+                <span class="text-muted small">200文字以内</span>
+              </div>
+              <%= form.text_area :mood,
+                    class: "form-control top-textarea mb-3",
+                    rows: 3,
+                    placeholder: "例：コストコの塊肉をカロリー爆上げで食べたい" %>
+              <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3">
+                <%= link_to "#", class: "top-register-link" do %>
+                  <i class="bi bi-airplane-fill"></i> ユーザー登録して海外の料理を楽しもう！
+                <% end %>
+                <%= form.button class: "wk-btn wk-btn-primary" do %>
+                  検索！<i class="bi bi-search"></i>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+        </div>
+        <!-- 右:メインビジュアル -->
+        <div class="col-lg-6 order-1 order-lg-2">
+          <div class="top-poster">
+            <%= image_tag "wow_kitchen_top.jpeg", alt: "世界の屋台グルメ" %>
+            <span class="top-sticker top-sticker-1"><i class="bi bi-fire text-danger"></i>COOK THE WORLD</span>
+            <span class="top-sticker top-sticker-2"><i class="bi bi-translate me-1"></i>海外レシピを日本語で</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- みんなのWow!(投稿一覧) ※MVP後の機能 -->
+  <!-- <section class="top-posts">
+    <div class="container">
+      <h2 class="top-posts-title mb-4">
+        みんなのWow! <span class="fs-5 fw-bold text-muted">(投稿一覧)</span>
+      </h2>
+
+      <div class="row g-4">
+        <div class="col-12 col-md-6 col-lg-4">
+          <article class="wk-card">
+            <div class="wk-card-img">
+              <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuAJMeNu4Blubo13ykjZvXfs9QBNhB57Fe1aSM0HH2tMBRMFrwk4CYNRpBxLGnb077Ja6js2UWtUqmAcg9BsLz4DY6o_nCg2rbFn56fxivAUGoeWoxrHHd1Dp5qvzCc6JSydkMv59B0FbCCCcgGLUPjhJUnY0Kjg2go83QGZ-RoO2QZBCcvaQUjgIAlDCXplvFtD96v3b_UtIIKESWLRDyLRxgYupmJ934VbvERMDA" alt="実際に作った料理の写真">
+            </div>
+            <div class="wk-card-body">
+              <h3 class="top-post-title">ビリアタコス</h3>
+              <p class="top-post-comment">塊肉をスパイスと煮込んでチーズと焼くだけ。口の中がメキシコの市場になりました！</p>
+              <a href="#" class="wk-btn wk-btn-light">投稿詳細<i class="bi bi-arrow-right-circle-fill"></i></a>
+            </div>
+          </article>
+        </div>
+
+        <div class="col-12 col-md-6 col-lg-4">
+          <article class="wk-card">
+            <div class="wk-card-img">
+              <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuA4DSQ9QrHtrM3lcbgOTna9nau-g2Jqhs9DwGZ6tNM6J70euHVV8grD1fFNPsBljR_j_z6j0v4C8aCQoPy861qUTrVfA01BcAPqaciWGJlxoNx50pQDI7C0qhUcDeEv06K__kx8TxrqBt3VDPjGMw5udQJBVQWDheOFv6Cbo0N-AbV5qoRrqzTZfTCG2ucmCeDy5VXEoQ5Urn7aTG1MfnViXvEA0ctojtWU6FZrcQ" alt="実際に作った料理の写真">
+            </div>
+            <div class="wk-card-body">
+              <h3 class="top-post-title">ピーナッツサテ串</h3>
+              <p class="top-post-comment">ココナッツミルクで漬け込んだ串焼き。屋台の熱気を自宅のフライパンで再現できました。</p>
+              <a href="#" class="wk-btn wk-btn-light">投稿詳細<i class="bi bi-arrow-right-circle-fill"></i></a>
+            </div>
+          </article>
+        </div>
+
+        <div class="col-12 col-md-6 col-lg-4">
+          <article class="wk-card">
+            <div class="wk-card-img">
+              <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuBadx6tmjeYwrj_R-BJNbz_lzpV4rhpppnJ9kEp2R_VgXWepP9epIX6ozXv1_h_XDvye42hul6xgpyIri5Fj4tUUHS4s1qsX8CVwG-HRitX19KavXhpKYSi9MvR7x2gajooyInrF9YNShK4D0Pz1uIu-FwCABjxaHdF6wzWCnnLoriIuUKwNVTtwWmLiKJ1eQa1yCcL3JX-4a2Rd15jwc_GQvfKNDSF6JmJ_4C21A" alt="実際に作った料理の写真">
+            </div>
+            <div class="wk-card-body">
+              <h3 class="top-post-title">シーフードパエリア</h3>
+              <p class="top-post-comment">レモンを豪快に絞ってかきこむ！おこげまで本格的な味になりました。</p>
+              <a href="#" class="wk-btn wk-btn-light">投稿詳細<i class="bi bi-arrow-right-circle-fill"></i></a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </div>
+  </section> -->
+</main>
