@@ -1,0 +1,3 @@
+--require spec_helper
+# rspecコマンドを使って表示される形式のフォーマットを見やすく設定
+--format documentation
