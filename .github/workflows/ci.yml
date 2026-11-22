@@ -178,8 +178,7 @@ jobs:
     services:
       # DBのコンテナ(jobが別のマシンなのでtestのjobと同じ設定をもう一度書く必要がある)
       postgres:
-        # 版の指定がない(最新版)。test のjobは postgres:18 なので、そろえるとよい
-        image: postgres
+        image: postgres18
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: password
@@ -191,10 +190,11 @@ jobs:
       chrome:
         # イメージ(どのブラウザのコンテナを作るか)。ここは「住所」ではなく「種類」の指定
         image: seleniarm/standalone-chromium:latest
-        # マシンの4444番ポートにこのコンテナの4444番につなぐ。
-        # マシンからlocalhost:4444 でChromeにつなげるようになる
+        # マシンの4443番ポートにこのコンテナの4444番につなぐ。
+        # マシンからlocalhost:4443 でChromeにつなげるようになる
+        # 4444番ポートを最初使うようにしていたが、rails_helper.rbでcapybaraが4444番を使うようにしていたため、重複していた
         ports:
-          - 4444:4444
+          - 4443:4444
 
       # Redis(今は使っていないのでコメントアウト)
       # redis:
@@ -223,8 +223,6 @@ jobs:
         env:
           RAILS_ENV: test
           DATABASE_URL: postgres://postgres:password@localhost:5432
-          # この手順ではChromeは使わないのでSELENIUM_DRIVER_URL はなくても動く
-          SELENIUM_DRIVER_URL: http://localhost:4444/wd/hub
           # RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
         run: bundle exec rails db:prepare
 
@@ -235,9 +233,9 @@ jobs:
           DATABASE_URL: postgres://postgres:password@localhost:5432
           # Chromeの場所(住所)。spec/support/capybara.rb がこの環境変数を読んでいる。
           # 手順はコンテナの中ではなくマシンそのもので動くので、
-          # services の ports で出したlocalhost:4444 が宛先になる。
+          # services の ports で出したlocalhost:4443 が宛先になる。
           # /wd/hub はSeleniumの命令を受け付ける入口のパス
-          SELENIUM_DRIVER_URL: http://localhost:4444/wd/hub
+          SELENIUM_DRIVER_URL: http://localhost:4443/wd/hub
           # RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
           # REDIS_URL: redis://localhost:6379/0
         # spec/system のテストだけを実行する
