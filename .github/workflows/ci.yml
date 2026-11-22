@@ -1,68 +1,117 @@
+# ワークフロー(CI全体)の名前。GitHubのActionsタブやPRの「Checks」に表示される
 name: CI
 
+# ===== いつ動くか =====
 on:
+  # PRが作られたとき、PRに追加コミットをpushしたときに動く(どのブランチ向けでも)
   pull_request:
+  # mainブランチへのpushのときに動く(PRをマージしたときもこれに当たる)
   push:
     branches: [ main ]
 
+# ===== 仕事(job)の一覧 =====
+# jobはそれぞれ別々のマシンで同時に(並列で)動く。
+# 別のマシンなのでコードやgemの準備はjobごとに必要になる
 jobs:
+
+  # ---------- 仕事1:セキュリティの検査 ----------
   scan_ruby:
+    # このjobを動かすマシン(GitHubが用意する最新のUbuntu)
     runs-on: ubuntu-latest
 
     steps:
+      # リポジトリのコードをこのマシンに取ってくる。
+      # CIのマシンは毎回まっさらなので最初に必ず必要
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
+      # Rubyを用意しgemをインストール
+      # Rubyの版は.ruby-version などから自動で判断される
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
+          # true:bundle install を自動実行し結果(gem)を保存して次回を速くする
           bundler-cache: true
 
-      - name: Scan for common Rails security vulnerabilities using static analysis
+      # brakeman:コードの中に脆弱性になりそうな書き方がないか検査する
+      # --no-pager:結果を1画面ずつ止めずに全部出力する(CIではキー入力ができないため)
+      # 警告があると失敗(赤)になる
+      - name: gem_brakeman_コードの中の脆弱性を確認するgem
         run: bin/brakeman --no-pager
       
-      - name: Scan for known security vulnerabilities in gems used
+      # bundler-audit:Gemfile.lock にあるgemの版に既知の脆弱性がないか検査する
+      - name: gem_bundler-audit_gemfile.lockにあるgemに脆弱性がないか確認するgem
         run: bin/bundler-audit
       
+  # ---------- 仕事2:コードの書き方の検査 ----------
   lint:
     runs-on: ubuntu-latest
+    # このjob全体で使う環境変数(自分で定義したもの)
     env:
+      # rubocopが検査結果のキャッシュを保存するフォルダ
       RUBOCOP_CACHE_ROOT: tmp/rubocop
     steps:
+      # コードを取ってくる
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
+      # Rubyとgemを用意する
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
           bundler-cache: true
 
+      # rubocopのキャッシュを前回のCIから取り出す(CIの最後に自動で保存もする)。
+      # 目的はrubocopを速くすること。なくても動く
       - name: Prepare RuboCop cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
+        # このステップの中だけで使う環境変数
         env:
+          # hashFiles(...):GitHubの関数。指定したファイルの中身から識別用の文字列を作る。
+          # rubocopの設定やgemが変わると文字列も変わる
           DEPENDENCIES_HASH: ${{ hashFiles('.ruby-version', '**/.rubocop.yml', '**/.rubocop_todo.yml', 'Gemfile.lock') }}
         with:
+          # 保存・取り出しするフォルダ(上の RUBOCOP_CACHE_ROOT)
           path: ${{ env.RUBOCOP_CACHE_ROOT }}
+          # キャッシュの「合言葉」。一致するキャッシュがあれば取り出す。
+          # runner.os :OSの名前(GitHubが自動で用意する)
+          # 最後の部分:mainブランチなら run_id(毎回違う番号)で毎回新しく保存する。
+          # それ以外のブランチなら 'default' という固定の文字を使う
           key: rubocop-${{ runner.os }}-${{ env.DEPENDENCIES_HASH }}-${{ github.ref_name == github.event.repository.default_branch && github.run_id || 'default' }}
+          # key が完全一致しないとき前半が同じキャッシュで代わりに取り出す
           restore-keys: |
             rubocop-${{ runner.os }}-${{ env.DEPENDENCIES_HASH }}-
 
-      - name: Lint code for consistent style
+      # rubocop:コードの書き方がルールに沿っているか検査する
+      # -f github:違反をPRの「Files changed」に注釈で表示する形式にする
+      # 違反があると失敗(赤)になる
+      - name: gem_rubocop_Lint_コードの書き方がルール通りか確認
         run: bin/rubocop -f github
 
+  # ---------- 仕事3:テスト(システムテスト以外) ----------
   test:
     runs-on: ubuntu-latest
 
+    # このjobの間だけ横で動かす「別のコンテナ」(今回はDB)
+    # 手元の compose.yml の db: と同じような役割
     services:
       postgres:
-        image: postgres
+        # PostgreSQL 18のイメージ(手元の compose.yml とそろえている)
+        image: postgres:18
+        # DBサーバーのユーザー名とパスワード(「DBをこの設定で作る」という指定)
+        # 下の DATABASE_URL の中のユーザー名・パスワードと同じ値にする必要がある
         env:
           POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
+          POSTGRES_PASSWORD: password
+        # 「マシン側のポート:コンテナ側のポート」。
+        # マシンからlocalhost:5432 でDBにつなげるようになる
         ports:
           - 5432:5432
+        # DBが使える状態になるまで次の手順を待たせるための確認(ヘルスチェック)
+        # pg_isready を10秒ごとに実行し、5秒以内に応答がなければ失敗、3回失敗したら異常とする
         options: --health-cmd="pg_isready" --health-interval=10s --health-timeout=5s --health-retries=3
 
+      # ↓ Redis(別のデータ保存の仕組み)を使うときの設定。今は使っていないのでコメントアウト
       # redis:
       #   image: valkey/valkey:8
       #   ports:
@@ -70,38 +119,105 @@ jobs:
       #   options: --health-cmd "redis-cli ping" --health-interval 10s --health-timeout 5s --health-retries 5
 
     steps:
+      # 必要なOSのパッケージを入れる
+      # apt-get update:入れられるパッケージの一覧を最新にする
+      # --no-install-recommends:おすすめの追加パッケージは入れない(軽くするため)
+      # -y:「入れますか?」の確認に、自動で「はい」と答える
+      # libpq-dev:PostgreSQL用のgem(pg)をビルドするために必要
+      # libvips  :画像を処理するライブラリ(Railsの画像機能が使う)
+      # node-gyp :Node.jsのネイティブな部品をビルドするためのツール
       - name: Install packages
         run: sudo apt-get update && sudo apt-get install --no-install-recommends -y libpq-dev libvips node-gyp
 
+      # コードを取ってくる
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
+      # Rubyとgemを用意する
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
           bundler-cache: true
 
-      - name: Run tests
+      # Node.jsを用意する(手元のDockerfile.devと同じ26)
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 26
+
+      # package.json に書いてあるパッケージをインストールする
+      # --frozen-lockfile:yarn.lock と違う版を入れない(CIで手元と同じ版を使うため)
+      - name: Install JS packages
+        run: yarn install --frozen-lockfile
+
+      # JavaScriptをビルドして app/assets/builds/application.js を作る
+      # (手元では Procfile.dev の「yarn build --watch」がこれをやっている)
+      - name: Build JS
+        run: yarn build
+
+      # CSSをビルドして app/assets/builds/ にCSSを作る
+      # (手元では Procfile.dev の「yarn watch:css」がこれをやっている)
+      - name: Build CSS
+        run: yarn build:css
+      
+      # テスト用のDBを作る
+      - name: Create DB
         env:
+          # Railsを「テスト環境」で動かす(database.yml の test: の設定が使われる)
           RAILS_ENV: test
-          DATABASE_URL: postgres://postgres:postgres@localhost:5432
+          # DBの場所。形は「postgres://ユーザー名:パスワード@ホスト名:ポート」
+          # 上の services の postgres の設定と、合わせている。
+          # DB名は書いていないので、database.yml の test: に書いてある名前が使われる
+          DATABASE_URL: postgres://postgres:password@localhost:5432
+          # ↓ credentials(暗号化した設定)をテストで読むときに必要。
+          #   マスターキーは、GitHubの「Secrets」に登録して、${{ secrets.〇〇 }} で呼ぶ。今は不要
           # RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
           # REDIS_URL: redis://localhost:6379/0
-        run: bin/rails db:test:prepare test
+        # db:prepare:DBがなければ作りスキーマ(テーブルの定義)を読み込む。
+        # CIのDBサーバーは空なのでこれでテストが使えるDBになる
+        run: bundle exec rails db:prepare
 
+      # RSpecを実行する(システムテスト以外)
+      - name: Run_tests_システムテスト以外のRspecテスト
+        env:
+          RAILS_ENV: test
+          DATABASE_URL: postgres://postgres:password@localhost:5432
+          # RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
+          # REDIS_URL: redis://localhost:6379/0
+        # bundle exec rspec:RSpecを実行する
+        # --exclude-pattern:このパターンに当たるファイルを除外する
+        # "spec/system/**/*_spec.rb":spec/system/ の中の(サブフォルダも含む)全テストファイル
+        #   システムテストはChromeが必要でこのjobにはChromeがないため除外している
+        #   *を含むのでダブルクォーテーションで囲みシェルに展開されないようにしている
+        run: bundle exec rspec --exclude-pattern "spec/system/**/*_spec.rb"
+
+  # ---------- 仕事4:システムテスト(ブラウザを使うテスト) ----------
   system-test:
     runs-on: ubuntu-latest
 
+    # このjobの間だけ横で動かす別のコンテナ(DBとChrome)
     services:
+      # DBのコンテナ(jobが別のマシンなのでtestのjobと同じ設定をもう一度書く必要がある)
       postgres:
-        image: postgres
+        image: postgres:18
         env:
           POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
+          POSTGRES_PASSWORD: password
         ports:
           - 5432:5432
         options: --health-cmd="pg_isready" --health-interval=10s --health-timeout=5s --health-retries=3
+      # ブラウザ(Chromium)のコンテナ。手元の compose.yml の chrome: と同じ役割。
+      # RSpecがここに操作の命令を送ってブラウザを動かす
+      chrome:
+        # イメージ(どのブラウザのコンテナを作るか)。ここは「住所」ではなく「種類」の指定
+        image: seleniarm/standalone-chromium:latest
+        # マシンの4443番ポートにこのコンテナの4444番につなぐ。
+        # マシンからlocalhost:4443 でChromeにつなげるようになる
+        # 4444番ポートを最初使うようにしていたが、rails_helper.rbでcapybaraが4444番を使うようにしていたため、重複していた
+        ports:
+          - 4443:4444
 
+      # Redis(今は使っていないのでコメントアウト)
       # redis:
       #   image: valkey/valkey:8
       #   ports:
@@ -109,29 +225,74 @@ jobs:
       #   options: --health-cmd "redis-cli ping" --health-interval 10s --health-timeout 5s --health-retries 5
 
     steps:
+      # OSのパッケージを入れる(内容はtestのjobと同じ)
       - name: Install packages
         run: sudo apt-get update && sudo apt-get install --no-install-recommends -y libpq-dev libvips node-gyp
 
+      # コードを取ってくる
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
+      # Rubyとgemを用意する
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
           bundler-cache: true
 
-      - name: Run System Tests
+      # Node.jsを用意する(手元のDockerfile.devと同じ26)
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 26
+
+      # package.json に書いてあるパッケージをインストールする
+      # --frozen-lockfile:yarn.lock と違う版を入れない(CIで手元と同じ版を使うため)
+      - name: Install JS packages
+        run: yarn install --frozen-lockfile
+
+      # JavaScriptをビルドして app/assets/builds/application.js を作る
+      # (手元では Procfile.dev の「yarn build --watch」がこれをやっている)
+      - name: Build JS
+        run: yarn build
+
+      # CSSをビルドして app/assets/builds/ にCSSを作る
+      # (手元では Procfile.dev の「yarn watch:css」がこれをやっている)
+      - name: Build CSS
+        run: yarn build:css
+
+      # テスト用のDBを作る(内容はtestのjobと同じ)
+      - name: Create DB
         env:
           RAILS_ENV: test
-          DATABASE_URL: postgres://postgres:postgres@localhost:5432
+          DATABASE_URL: postgres://postgres:password@localhost:5432
+          # RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
+        run: bundle exec rails db:prepare
+
+      # システムテストを実行する
+      - name: Run_System_Tests_システムテストの実行
+        env:
+          RAILS_ENV: test
+          DATABASE_URL: postgres://postgres:password@localhost:5432
+          # Chromeの場所(住所)。spec/support/capybara.rb がこの環境変数を読んでいる。
+          # 手順はコンテナの中ではなくマシンそのもので動くので、
+          # services の ports で出したlocalhost:4443 が宛先になる。
+          # /wd/hub はSeleniumの命令を受け付ける入口のパス
+          SELENIUM_DRIVER_URL: http://localhost:4443/wd/hub
           # RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
           # REDIS_URL: redis://localhost:6379/0
-        run: bin/rails db:test:prepare test:system
+        # spec/system のテストだけを実行する
+        run: bundle exec rspec spec/system
 
+      # テストが失敗したときだけスクリーンショットを保存してあとでダウンロードできるようにする
       - name: Keep screenshots from failed system tests
-        uses: actions/upload-artifact@v4
+        # ファイルを保存(アップロード)するための部品
+        uses: actions/upload-artifact@v7
+        # 「前の手順が失敗したときだけ」このステップを実行する
         if: failure()
         with:
+          # ダウンロードするときの名前
           name: screenshots
+          # 保存するフォルダ。github.workspace はコードを取ってきた場所(GitHubが自動で用意)
           path: ${{ github.workspace }}/tmp/screenshots
+          # フォルダが空またはなくてもエラーにしない
           if-no-files-found: ignore
