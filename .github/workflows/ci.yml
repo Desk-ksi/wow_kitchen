@@ -286,7 +286,7 @@ jobs:
       # テストが失敗したときだけスクリーンショットを保存してあとでダウンロードできるようにする
       - name: Keep screenshots from failed system tests
         # ファイルを保存(アップロード)するための部品
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         # 「前の手順が失敗したときだけ」このステップを実行する
         if: failure()
         with:
