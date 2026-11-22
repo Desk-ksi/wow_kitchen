@@ -23,7 +23,7 @@ jobs:
       # リポジトリのコードをこのマシンに取ってくる。
       # CIのマシンは毎回まっさらなので最初に必ず必要
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       # Rubyを用意しgemをインストール
       # Rubyの版は.ruby-version などから自動で判断される
@@ -53,7 +53,7 @@ jobs:
     steps:
       # コードを取ってくる
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       # Rubyとgemを用意する
       - name: Set up Ruby
@@ -131,7 +131,7 @@ jobs:
 
       # コードを取ってくる
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       # Rubyとgemを用意する
       - name: Set up Ruby
@@ -231,7 +231,7 @@ jobs:
 
       # コードを取ってくる
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       # Rubyとgemを用意する
       - name: Set up Ruby
