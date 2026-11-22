@@ -64,7 +64,7 @@ jobs:
       # rubocopのキャッシュを前回のCIから取り出す(CIの最後に自動で保存もする)。
       # 目的はrubocopを速くすること。なくても動く
       - name: Prepare RuboCop cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         # このステップの中だけで使う環境変数
         env:
           # hashFiles(...):GitHubの関数。指定したファイルの中身から識別用の文字列を作る。
