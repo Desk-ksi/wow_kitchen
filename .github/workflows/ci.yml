@@ -138,6 +138,27 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           bundler-cache: true
+
+      # Node.jsを用意する(手元のDockerfile.devと同じ26)
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 26
+
+      # package.json に書いてあるパッケージをインストールする
+      # --frozen-lockfile:yarn.lock と違う版を入れない(CIで手元と同じ版を使うため)
+      - name: Install JS packages
+        run: yarn install --frozen-lockfile
+
+      # JavaScriptをビルドして app/assets/builds/application.js を作る
+      # (手元では Procfile.dev の「yarn build --watch」がこれをやっている)
+      - name: Build JS
+        run: yarn build
+
+      # CSSをビルドして app/assets/builds/ にCSSを作る
+      # (手元では Procfile.dev の「yarn watch:css」がこれをやっている)
+      - name: Build CSS
+        run: yarn build:css
       
       # テスト用のDBを作る
       - name: Create DB
@@ -217,6 +238,27 @@ jobs:
         uses: ruby/setup-ruby@v1
         with:
           bundler-cache: true
+
+      # Node.jsを用意する(手元のDockerfile.devと同じ26)
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 26
+
+      # package.json に書いてあるパッケージをインストールする
+      # --frozen-lockfile:yarn.lock と違う版を入れない(CIで手元と同じ版を使うため)
+      - name: Install JS packages
+        run: yarn install --frozen-lockfile
+
+      # JavaScriptをビルドして app/assets/builds/application.js を作る
+      # (手元では Procfile.dev の「yarn build --watch」がこれをやっている)
+      - name: Build JS
+        run: yarn build
+
+      # CSSをビルドして app/assets/builds/ にCSSを作る
+      # (手元では Procfile.dev の「yarn watch:css」がこれをやっている)
+      - name: Build CSS
+        run: yarn build:css
 
       # テスト用のDBを作る(内容はtestのjobと同じ)
       - name: Create DB
