@@ -11,6 +11,9 @@ require 'rails_helper'
         it "nicknameが空欄だったらバリデーションエラーが発生する" do
           user = FactoryBot.build(:user, nickname: nil)
           user.valid?
+          # user.errorsでバリデーションエラーの内容を取得して、be_of_kindでバリデーションエラーの種類を確認している
+          # バリデーションエラーの種類は以下のページで確認できる
+          # https://railsguides.jp/i18n.html#%E3%82%A8%E3%83%A9%E3%83%BC%E3%83%A1%E3%83%83%E3%82%BB%E3%83%BC%E3%82%B8%E5%86%85%E3%81%A7%E3%81%AE%E5%BC%8F%E5%B1%95%E9%96%8B
           expect(user.errors).to be_of_kind(:nickname, :blank)
         end
 
