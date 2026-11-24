@@ -79,4 +79,6 @@ RSpec.configure do |config|
     Capybara.app_host = "http://#{Capybara.server_host}:#{Capybara.server_port}"
     Capybara.ignore_hidden_elements = false
   end
+
+  config.include FactoryBot::Syntax::Methods
 end
