@@ -1,8 +1,15 @@
 <header class="wk-header">
   <div class="container d-flex align-items-center justify-content-between">
     <%= link_to "Wow!Kitchen", root_path, class: "wk-logo" %>
-    <%= link_to "#", class: "wk-btn wk-btn-light" do %>
-      <i class="bi bi-person-fill"></i>ログイン
+    <!-- ログイン状態ならログアウトボタンへ。ログインしてなかったらログインボタン。確認するメソッドがdevidseのuser_signed_in? -->
+    <% if user_signed_in? %>
+      <%= link_to "#", class: "wk-btn wk-btn-light" do %>
+        <i class="bi bi-person-fill"></i>ログアウト
+      <% end %>
+    <% else %>
+      <%= link_to new_user_session_path, class: "wk-btn wk-btn-light" do %>
+        <i class="bi bi-person-fill"></i>ログイン
+      <% end %>
     <% end %>
   </div>
 </header>

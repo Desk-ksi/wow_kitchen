@@ -1,0 +1,39 @@
+<main class="container auth-wrap">
+  <div class="auth-card row g-0 mx-auto" style="max-width: 960px;">
+    <!-- 写真 -->
+    <div class="col-lg-5 auth-visual">
+      <%= image_tag "wow_kitchen_user_login.jpeg", alt: "屋台で料理する様子" %>
+      <p class="auth-visual-text">おかえりなさい。<br>今日はどこの国へ？</p>
+    </div>
+    <!-- フォーム -->
+    <div class="col-lg-7 auth-form">
+      <div class="wk-tag">WELCOME BACK</div>
+      <h1 class="auth-title">ログイン</h1>
+      <%= form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
+        <div class="mb-3">
+          <p><%= f.label :email, class: "form-label auth-label"%></p>
+          <p><%= f.email_field :email, id: "user_email", class: "form-control auth-input", autofocus: true, autocomplete: "email" %></p>
+        </div>
+        <div class="mb-3">
+          <p><%= f.label :password, class:"form-label auth-label" %></p>
+          <p><%= f.password_field :password, id: "user_password", class: "form-control auth-input", autocomplete: "current-password" %></p>
+        </div>
+        <!-- remenberableログイン状態を保持するためのもの　MVPではこの機能をモデルでもマイグレーションファイルでもコメントアウトしているため使えない -->
+        <!-- <% if devise_mapping.rememberable? %>
+          <div class="field">
+            <p><%= f.check_box :remember_me %></p>
+            <p><%= f.label :remember_me %></p>
+          </div>
+        <% end %> -->
+        <div class="actions">
+          <%= button_tag type: :submit, class: "wk-btn wk-btn-primary w-100" do %>
+            <i class="bi bi-box-arrow-in-right"></i>ログインする
+          <% end %>
+        </div>
+      <% end %>
+      <p class="text-center mt-4 mb-0">
+        <%= link_to "まだ登録していない方は、こちらから登録してください", new_user_registration_path, class: "auth-link" %>
+      </p>
+    </div>
+  </div>
+</main>
