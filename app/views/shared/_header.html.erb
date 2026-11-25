@@ -1,9 +1,10 @@
 <header class="wk-header">
   <div class="container d-flex align-items-center justify-content-between">
     <%= link_to "Wow!Kitchen", root_path, class: "wk-logo" %>
-    <!-- ログイン状態ならログアウトボタンへ。ログインしてなかったらログインボタン。確認するメソッドがdevidseのuser_signed_in? -->
+    <!-- ログイン状態ならログアウトボタンへ。ログインしてなかったらログインボタン。確認するメソッドがdeviseのuser_signed_in? -->
     <% if user_signed_in? %>
-      <%= link_to "#", class: "wk-btn wk-btn-light", id: "header-logout-button" do %>
+      <!-- link_to をdeleteリクエストにするために、turbo_method: :delete -->
+      <%= link_to destroy_user_session_path, data: { turbo_method: :delete }, class: "wk-btn wk-btn-light", id: "header-logout-button" do %>
         <i class="bi bi-person-fill"></i>ログアウト
       <% end %>
     <% else %>
