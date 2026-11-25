@@ -10,7 +10,7 @@ RSpec.describe "Sessions", type: :system do
         expect(page).to have_css("#mood")
         expect(page).to have_content("Wow！な料理で日常にWow！を")
         expect(page).to have_selector(".alert-success")
-        expect(page).to have_content("ログアウト")
+        expect(page).to have_selector("#header-logout-button")
         expect(page).to have_content("ログインしました。")
         expect(page).to have_current_path(root_path)
       end
