@@ -8,6 +8,7 @@ Bundler.require(*Rails.groups)
 
 module Myapp
   class Application < Rails::Application
+    config.i18n.default_locale = :ja
     # Initialize configuration defaults for originally generated Rails version.
     config.load_defaults 8.1
 
@@ -22,7 +23,6 @@ module Myapp
     config.generators do |g|
       g.skip_routes true
       g.helper false
-      g.test_framework nil
     end
 
     # Configuration for the application, engines, and railties goes here.
