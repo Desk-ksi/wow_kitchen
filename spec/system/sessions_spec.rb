@@ -2,9 +2,9 @@ require 'rails_helper'
 
 RSpec.describe "Sessions", type: :system do
   include SessionMacros
-  describe "ログイン機能" do
+  describe "ログイン、ログアウト機能" do
+    let(:user) { FactoryBot.create(:user) }
     context "ログイン機能のテスト" do
-      let(:user) { FactoryBot.create(:user) }
       it "正規に入力してログインに成功する" do
         login(user)
         expect(page).to have_css("#mood")
@@ -50,6 +50,18 @@ RSpec.describe "Sessions", type: :system do
         expect(page).to have_current_path(new_user_session_path)
         expect(page).to have_selector("#user_email")
         expect(page).to have_selector("#user_password")
+      end
+    end
+
+    context "ログアウト機能のテスト" do
+      it "ログアウトが成功するか" do
+        login(user)
+        find("#header-logout-button").click
+        expect(page).to have_current_path(root_path)
+        expect(page).to have_css("#mood")
+        expect(page).to have_content("Wow！な料理で日常にWow！を")
+        expect(page).to have_content("ログアウトしました。")
+        expect(page).to have_selector("#header-login-button")
       end
     end
   end
