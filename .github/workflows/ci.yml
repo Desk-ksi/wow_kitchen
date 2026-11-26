@@ -141,7 +141,7 @@ jobs:
 
       # Node.jsを用意する(手元のDockerfile.devと同じ26)
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 26
 
@@ -241,7 +241,7 @@ jobs:
 
       # Node.jsを用意する(手元のDockerfile.devと同じ26)
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 26
 
