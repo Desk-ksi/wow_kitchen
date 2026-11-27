@@ -15,7 +15,7 @@
             <i class="bi bi-megaphone-fill text-warning"></i>Wow！な料理で日常にWow！を
           </p>
           <div class="top-search-box">
-            <%= form_with url: "#", data: { turbo: false } do |form| %>
+            <%= form_with url: searches_path, data: { turbo: false } do |form| %>
               <div class="top-search-label">
                 <%= form.label :mood do %>
                   <i class="bi bi-pencil-square text-danger me-1"></i>今日は何が食べたい？
