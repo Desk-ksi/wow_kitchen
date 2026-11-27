@@ -1,5 +1,4 @@
 class LlmMoodChange
-
   # PROMPT = <<~TEXTはヒアドキュメント。長い文字列を書くときに、文字列専用で入れていく
   # インデントも気にする必要がない。無駄なインデントは自動で消す仕組みになっている
   # <<~TEXTで始まり、TEXTで終わる。このなかは文字列だから最初と最後に""を入れる必要がない。
@@ -76,7 +75,7 @@ class LlmMoodChange
       # LLMの前提条件（上で書いているヒアドキュメントをプロンプトとしている）
       system: PROMPT,
       # ユーザーからの入力
-      messages: [{ role: "user", content: mood }]
+      messages: [ { role: "user", content: mood } ]
     )
     # レスポンスは配列で出てくるため、配列を一つずつ取り出し、変数に入れている
     response.content.each do |block|
@@ -105,9 +104,9 @@ class LlmMoodChange
     # 空のハッシュの作成
     @llm_mood_change = Hash.new()
     # SpoonacularAPIに渡せるkeyの一覧（許可リスト）
-    permit_list = ["query", "cuisine", "type", "includeIngredients",
+    permit_list = [ "query", "cuisine", "type", "includeIngredients",
  "excludeIngredients", "maxReadyTime", "minCalories", "maxCalories",
- "minProtein", "minServings", "sort", "summary_ja"]
+ "minProtein", "minServings", "sort", "summary_ja" ]
     # LLMの出力されたハッシュを一つ一つkey,valueともに取り出す
     hash_result.each do |key, value|
       # permit_list(許可リスト)にkeyが入って（true）いたら
