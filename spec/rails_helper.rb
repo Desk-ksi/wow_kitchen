@@ -8,6 +8,11 @@ abort("The Rails environment is running in production mode!") if Rails.env.produ
 # that will avoid rails generators crashing because migrations haven't been run yet
 # return unless Rails.env.test?
 require 'rspec/rails'
+
+# WebMock（偽のHTTPリクエストを使うためのgem）をRSpecで使えるようにする設定
+require 'webmock/rspec'
+# WebMockはデフォルトの設定で、全てのリクエストをブロックしてしまう。ということはシステムテストができなくなるため、リクエストをtrueにする
+WebMock.allow_net_connect!
 # Add additional requires below this line. Rails is not loaded until this point!
 
 # Requires supporting ruby files with custom matchers and macros, etc, in
